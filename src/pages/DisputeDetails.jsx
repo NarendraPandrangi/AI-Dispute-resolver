@@ -437,6 +437,19 @@ const DisputeDetails = () => {
                                             const myVote = suggestionVotes[currentUser.email];
                                             const acceptedBy = Object.keys(suggestionVotes).filter(email => suggestionVotes[email] === 'accept');
 
+                                            // Check if THIS suggestion is fully resolved (consensus)
+                                            const participants = dispute.participants || [];
+                                            const isConsensus = participants.length > 0 && participants.every(p => suggestionVotes[p] === 'accept');
+
+                                            // Check if ANY suggestion is resolved
+                                            const resolutionText = dispute.resolution || (dispute.status === 'resolved' ? dispute.aiAnalysis.suggestions.find((_, i) => {
+                                                const votes = dispute.aiAnalysis.votes?.[i] || {};
+                                                return participants.length > 0 && participants.every(p => votes[p] === 'accept');
+                                            }) : null);
+
+                                            const isResolved = !!resolutionText;
+                                            const isThisTheResolution = isConsensus || (resolutionText === suggestionText);
+
                                             let actionPart = suggestionText;
                                             let reasonPart = null;
                                             const reasonMatch = suggestionText.match(/(?:Reason|Reasoning|Rational):\s*(.*)/i);
@@ -449,11 +462,13 @@ const DisputeDetails = () => {
                                             return (
                                                 <div
                                                     key={index}
-                                                    className={`relative group rounded-3xl transition-all duration-300 ${myVote === 'accept'
-                                                        ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500/50 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]'
-                                                        : myVote === 'reject'
-                                                            ? 'bg-red-950/30 border border-red-500/30 opacity-75'
-                                                            : 'bg-slate-800/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/20'
+                                                    className={`relative group rounded-3xl transition-all duration-300 ${isResolved && !isThisTheResolution
+                                                        ? 'opacity-30 pointer-events-none grayscale'
+                                                        : ''} ${myVote === 'accept'
+                                                            ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500/50 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]'
+                                                            : myVote === 'reject'
+                                                                ? 'bg-red-950/30 border border-red-500/30 opacity-75'
+                                                                : 'bg-slate-800/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/20'
                                                         }`}
                                                 >
                                                     <div className="p-8">
@@ -501,34 +516,51 @@ const DisputeDetails = () => {
                                                                                 Awaiting Votes
                                                                             </span>
                                                                         )}
+                                                                        {isThisTheResolution && (
+                                                                            <span className="ml-2 px-3 py-1 rounded-full bg-green-500 text-black text-xs font-bold uppercase tracking-wider animate-pulse">
+                                                                                Resolution Reached
+                                                                            </span>
+                                                                        )}
                                                                     </div>
 
                                                                     {/* Buttons */}
                                                                     <div className="flex items-center gap-4">
-                                                                        <button
-                                                                            onClick={() => handleSuggestionVote(index, 'reject')}
-                                                                            className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'reject'
-                                                                                ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/40'
-                                                                                : 'bg-transparent border-slate-700 text-slate-500 hover:border-red-500 hover:text-red-500 hover:bg-red-500/10'
-                                                                                }`}
-                                                                        >
-                                                                            <span className="flex items-center gap-2">
-                                                                                <X size={16} strokeWidth={3} /> REJECT
-                                                                            </span>
-                                                                        </button>
+                                                                        {!isResolved && (
+                                                                            <>
+                                                                                <button
+                                                                                    onClick={() => handleSuggestionVote(index, 'reject')}
+                                                                                    className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'reject'
+                                                                                        ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/40'
+                                                                                        : 'bg-transparent border-slate-700 text-slate-500 hover:border-red-500 hover:text-red-500 hover:bg-red-500/10'
+                                                                                        }`}
+                                                                                >
+                                                                                    <span className="flex items-center gap-2">
+                                                                                        <X size={16} strokeWidth={3} /> REJECT
+                                                                                    </span>
+                                                                                </button>
 
-                                                                        <button
-                                                                            onClick={() => handleSuggestionVote(index, 'accept')}
-                                                                            className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'accept'
-                                                                                ? 'bg-green-500 border-green-400 text-black shadow-[0_0_20px_rgba(34,197,94,0.6)] scale-105'
-                                                                                : 'bg-transparent border-green-500/30 text-green-400 hover:bg-green-500 hover:border-green-400 hover:text-black hover:shadow-[0_0_20px_rgba(34,197,94,0.4)]'
-                                                                                }`}
-                                                                        >
-                                                                            <span className="flex items-center gap-2">
-                                                                                <CheckCircle size={16} strokeWidth={3} />
-                                                                                {myVote === 'accept' ? 'ACCEPTED' : 'ACCEPT'}
-                                                                            </span>
-                                                                        </button>
+                                                                                <button
+                                                                                    onClick={() => handleSuggestionVote(index, 'accept')}
+                                                                                    className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'accept'
+                                                                                        ? 'bg-green-500 border-green-400 text-black shadow-[0_0_20px_rgba(34,197,94,0.6)] scale-105'
+                                                                                        : 'bg-transparent border-green-500/30 text-green-400 hover:bg-green-500 hover:border-green-400 hover:text-black hover:shadow-[0_0_20px_rgba(34,197,94,0.4)]'
+                                                                                        }`}
+                                                                                >
+                                                                                    <span className="flex items-center gap-2">
+                                                                                        <CheckCircle size={16} strokeWidth={3} />
+                                                                                        {myVote === 'accept' ? 'ACCEPTED' : 'ACCEPT'}
+                                                                                    </span>
+                                                                                </button>
+                                                                            </>
+                                                                        )}
+
+                                                                        {isResolved && isThisTheResolution && (
+                                                                            <div className="flex items-center gap-4">
+                                                                                <button disabled className="px-8 py-3 rounded-xl bg-green-600 text-white font-bold opacity-100 cursor-default">
+                                                                                    AGREEMENT FINALIZED
+                                                                                </button>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>
