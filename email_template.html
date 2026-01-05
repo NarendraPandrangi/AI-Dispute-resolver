@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .heading {
+            color: #3b82f6;
+            /* Bright Blue */
+            font-size: 24px;
+            font-weight: bold;
+            text-align: left;
+            /* Image shows left-aligned or centered? Looks centered in mobile view but let's stick to standard email flow */
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .intro {
+            color: #e5e7eb;
+            font-size: 16px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .details-box {
+            background-color: #111827;
+            /* Darker grey box */
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .detail-row {
+            margin-bottom: 12px;
+            color: #e5e7eb;
+            font-size: 15px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #ffffff;
+            margin-right: 8px;
+        }
+
+        .action-btn {
+            display: inline-block;
+            background-color: #2563eb;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: #9ca3af;
+            font-size: 14px;
+            border-top: 1px solid #374151;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Blue Heading -->
+        <div class="heading">New Notification</div>
+
+        <!-- Intro Text -->
+        <div class="intro">
+            Hello {{to_name}},<br><br>
+            You have received a new update regarding your dispute case. Details are provided below:
+        </div>
+
+        <!-- The Dark Box -->
+        <div class="details-box">
+            <div class="detail-row">
+                <span class="detail-label">Message:</span><br>
+                {{message}}
+            </div>
+
+            <div class="detail-row" style="margin-top: 20px;">
+                <span class="detail-label">Action:</span><br>
+                <a href="{{link}}" class="action-btn">View Dispute Details</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="intro">
+            You will receive follow-up notifications as the case progresses.
+        </div>
+
+        <div class="footer">
+            Best of luck with the resolution!<br>
+            - AI Dispute Resolver Team
+        </div>
+    </div>
+</body>
+
+</html>

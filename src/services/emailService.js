@@ -28,11 +28,15 @@ export const sendEmailNotification = async (toEmail, subject, message, link) => 
 
     console.log(`[Email Service] Attempting to send email to: ${toEmail}`);
 
+    // Ensure the link is a full URL pointing to the production site
+    const BASE_URL = "https://ai-dispute-resolver.vercel.app";
+    const fullLink = link && link.startsWith('/') ? `${BASE_URL}${link}` : link;
+
     const templateParams = {
         to_email: toEmail,
         subject: subject,
         message: message,
-        link: link || '',
+        link: fullLink || BASE_URL,
         // Common defaults in case template uses different names
         to_name: toEmail.split('@')[0],
         from_name: "AI Dispute Resolver",
