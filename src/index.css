@@ -2,25 +2,33 @@
 
 /* --- Reset & Base --- */
 :root {
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
 
-  --primary-hue: 220;
-  --primary: hsl(var(--primary-hue), 90%, 50%);
-  --primary-dark: hsl(var(--primary-hue), 90%, 40%);
+  /* Modern Primary Blue/Indigo */
+  --primary-hue: 225;
+  --primary: hsl(var(--primary-hue), 85%, 55%);
+  --primary-dark: hsl(var(--primary-hue), 85%, 45%);
   --primary-light: hsl(var(--primary-hue), 90%, 65%);
+  --primary-glow: hsla(var(--primary-hue), 85%, 55%, 0.5);
 
-  --secondary-hue: 280;
+  --secondary-hue: 265;
   --secondary: hsl(var(--secondary-hue), 80%, 60%);
 
-  --bg-dark: #0f172a;
-  --bg-card: #1e293b;
-  --bg-input: #334155;
-  --bg-hover: rgba(255, 255, 255, 0.05);
+  /* Deep High-Contrast Dark Mode */
+  --bg-dark: #020617;
+  /* Slate 950 */
+  --bg-card: #0f172a;
+  /* Slate 900 */
+  --bg-input: #1e293b;
+  /* Slate 800 */
+  --bg-hover: rgba(255, 255, 255, 0.08);
 
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-danger: #ef4444;
   --text-success: #10b981;
+  --warning: #f59e0b;
 
   /* Layout Spacing */
   --space-1: 0.25rem;
@@ -30,16 +38,17 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-12: 3rem;
-  --header-height: 4rem;
-  --sidebar-width: 16rem;
+  --sidebar-width: 17rem;
+  /* Slightly wider */
 
-  /* Glassmorphism */
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  /* Enhanced Glassmorphism */
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 
-  --radius: 0.5rem;
-  --radius-lg: 1rem;
+  --radius: 0.75rem;
+  /* More rounded */
+  --radius-lg: 1.25rem;
 }
 
 * {
@@ -51,9 +60,31 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-dark);
+  background-image: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
+  /* Subtle texture everywhere */
   color: var(--text-main);
-  line-height: 1.5;
+  line-height: 1.6;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Utilities */
+.text-balance {
+  text-wrap: balance;
 }
 
 a {
@@ -422,11 +453,17 @@ textarea {
 
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  /* Inner light ring */
   border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Component Updates */
@@ -452,12 +489,15 @@ textarea {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgba(0, 118, 255, 0.23);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px var(--primary-glow), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
 }
 
 .btn-secondary {
@@ -537,9 +577,25 @@ svg {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, #60a5fa 0%, #c084fc 50%, #f472b6 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  animation: gradient-flow 5s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Scrollbar Styling for Logs/Lists */

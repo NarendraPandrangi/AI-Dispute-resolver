@@ -8,7 +8,7 @@ import { createNotification } from '../services/notifications';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Send, FileText, Shield, CheckCircle, Clock, Sparkles, X, Trash2 } from 'lucide-react';
+import { Send, FileText, Shield, CheckCircle, Clock, Sparkles, X, Trash2, Scale, MessageSquare } from 'lucide-react';
 
 const MAX_MESSAGES = 20;
 
@@ -20,6 +20,7 @@ const DisputeDetails = () => {
     const [loading, setLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
     const [analyzing, setAnalyzing] = useState(false);
+    const [activeTab, setActiveTab] = useState('discussion'); // 'discussion' | 'resolution'
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -41,7 +42,7 @@ const DisputeDetails = () => {
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [dispute?.messages]);
+    }, [dispute?.messages, activeTab]);
 
     const handleSuggestionVote = async (index, vote) => {
         if (!dispute.aiAnalysis) return;
@@ -72,8 +73,6 @@ const DisputeDetails = () => {
             const participants = dispute.participants || [];
             const otherParticipants = participants.filter(p => p !== currentUser.email);
 
-            // Check if this is the first acceptance for this user for this suggestion to avoid spamming?
-            // For now, simple notification logic
             for (const recipient of otherParticipants) {
                 await createNotification(
                     recipient.toLowerCase(),
@@ -176,289 +175,374 @@ const DisputeDetails = () => {
     const isResolved = dispute.status === 'resolved';
 
     return (
-        <div className="max-w-7xl mx-auto h-[calc(100vh-64px)] flex flex-col md:flex-row gap-6">
-            {/* Left Column: Chat Area */}
-            <div className="flex-1 flex flex-col h-full min-h-[600px]">
-                <Card className="flex-1 flex flex-col p-0 overflow-hidden h-full border-none">
-                    <div className="p-4 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center">
-                        <h2 className="font-semibold text-lg flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${isResolved ? 'bg-green-500' : 'bg-green-500 animate-pulse'}`}></span>
-                            Dispute Chat
-                        </h2>
-                        <div className="text-xs text-gray-500">
-                            Participants: {dispute.participants?.join(', ') || 'Unknown'}
-                        </div>
-                    </div>
+        <div className="max-w-7xl mx-auto h-[calc(100vh-64px)] flex flex-col">
+            {/* Header with Tabs */}
+            <div className="bg-slate-900/50 sticky top-0 z-20 pb-4 pt-2 px-2 flex flex-wrap items-center justify-between gap-4 border-b border-gray-800/50 mb-4 backdrop-blur-sm">
+                <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                        {dispute.title}
+                        <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium uppercase tracking-wider ${isResolved ? 'border-green-500 text-green-400 bg-green-500/10' : 'border-blue-500 text-blue-400 bg-blue-500/10'}`}>
+                            {dispute.status?.replace('_', ' ')}
+                        </span>
+                    </h2>
+                </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/20">
-                        {dispute.messages?.length === 0 && (
-                            <div className="text-center text-gray-500 mt-10">
-                                <p>No messages yet. Start the conversation to resolve this issue.</p>
-                            </div>
-                        )}
-
-                        {dispute.messages?.map((msg, index) => {
-                            const isMe = msg.sender === currentUser.email;
-                            return (
-                                <div key={index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] rounded-lg p-3 ${isMe
-                                        ? 'bg-blue-600 text-white rounded-tr-none'
-                                        : 'bg-gray-700 text-gray-200 rounded-tl-none'
-                                        }`}>
-                                        <p className="text-sm">{msg.content}</p>
-                                        <span className="text-[10px] opacity-70 block mt-1 text-right">
-                                            {msg.timestamp?.seconds ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Sending...'}
-                                        </span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-800 bg-gray-900/50">
-                        {/* Message Limit Indicator */}
-                        <div className="flex justify-between items-center mb-2 px-1">
-                            <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-                                {isResolved ? 'Chat Closed' : 'Limited Session'}
-                            </span>
-                            <span className={`text-xs font-medium ${dispute.messages?.length >= MAX_MESSAGES ? 'text-red-400' : 'text-gray-400'}`}>
-                                {dispute.messages?.length || 0} / {MAX_MESSAGES} Messages
-                            </span>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <input
-                                className="flex-1 bg-gray-800 border-none rounded-md px-4 py-2 text-white focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                placeholder={
-                                    isResolved ? "Dispute Resolved" :
-                                        (dispute.messages?.length >= MAX_MESSAGES) ? "Limit reached. Generate Analysis." :
-                                            "Type your message..."
-                                }
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                disabled={isResolved || (dispute.messages?.length >= MAX_MESSAGES)}
-                            />
-                            <Button
-                                type="submit"
-                                disabled={!newMessage.trim() || isResolved || (dispute.messages?.length >= MAX_MESSAGES)}
-                                className="px-4 disabled:bg-gray-700 disabled:text-gray-500"
-                            >
-                                <Send size={18} />
-                            </Button>
-                        </div>
-                    </form>
-                </Card>
+                <div className="flex items-center shadow-2xl">
+                    <button
+                        onClick={() => setActiveTab('discussion')}
+                        className={`relative px-12 py-4 text-lg font-black tracking-wider rounded-l-2xl border-y-2 border-l-2 transition-all duration-300 flex items-center gap-3 ${activeTab === 'discussion' ? 'bg-sky-400 border-sky-400 text-black shadow-[0_0_30px_rgba(56,189,248,0.6)] z-10' : 'bg-black/40 border-slate-700 text-sky-400 hover:bg-sky-400/10 hover:border-sky-400/50 z-0'} border-r-0`}
+                    >
+                        <MessageSquare size={24} strokeWidth={2.5} />
+                        DISCUSSION
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('resolution')}
+                        className={`relative px-12 py-4 text-lg font-black tracking-wider rounded-r-2xl border-2 transition-all duration-300 flex items-center gap-3 ${activeTab === 'resolution' ? 'bg-fuchsia-500 border-fuchsia-500 text-white shadow-[0_0_30px_rgba(217,70,239,0.6)] z-10' : 'bg-black/40 border-slate-700 text-fuchsia-500 hover:bg-fuchsia-500/10 hover:border-fuchsia-500/50 z-0'}`}
+                    >
+                        <Sparkles size={24} strokeWidth={2.5} className={activeTab === 'resolution' ? 'animate-pulse' : ''} />
+                        RESOLUTION CENTER
+                    </button>
+                </div>
             </div>
 
-            {/* Right Column: Info & AI */}
-            <div className="w-full md:w-96 flex flex-col gap-6 overflow-y-auto">
+            {/* TAB CONTENT */}
+            <div className="flex-1 overflow-hidden relative">
 
-                {/* Status Card */}
-                <Card className="p-5">
-                    <h3 className="text-gray-400 text-sm font-medium mb-3 uppercase tracking-wider">Status</h3>
-                    <div className="flex items-center gap-3 mb-6">
-                        {isResolved ? (
-                            <div className="bg-green-500/20 text-green-400 p-2 rounded-full"><CheckCircle size={24} /></div>
-                        ) : (
-                            <div className="bg-yellow-500/20 text-yellow-400 p-2 rounded-full"><Clock size={24} /></div>
-                        )}
-                        <div>
-                            <p className="text-xl font-bold capitalize text-white">{dispute.status?.replace('_', ' ') || 'Active'}</p>
-                            <p className="text-xs text-gray-500">Last updated: {new Date().toLocaleDateString()}</p>
-                        </div>
-                    </div>
+                {/* --- DISCUSSION TAB --- */}
+                {activeTab === 'discussion' && (
+                    <div className="flex flex-col md:flex-row gap-6 h-full pb-4">
+                        {/* Left: Chat Area */}
+                        <div className="flex-1 flex flex-col h-full">
+                            <Card className="flex-1 flex flex-col p-0 overflow-hidden h-full border-none shadow-none bg-transparent">
+                                <div className="p-4 border-b border-gray-800 bg-gray-900/50 flex justify-between items-center rounded-t-xl border border-slate-700/50">
+                                    <h2 className="font-semibold text-gray-200 flex items-center gap-2">
+                                        Live Chat
+                                        <span className="text-xs font-normal text-gray-500 ml-2">({dispute.messages?.length || 0} msgs)</span>
+                                    </h2>
+                                </div>
 
-                    {!isResolved && (
-                        <div className="flex flex-col gap-2">
-                            <Button variant="secondary" onClick={handleResolve} className="w-full text-green-400 border-green-900 hover:bg-green-900/20">
-                                Mark as Resolved
-                            </Button>
-                            <Button variant="secondary" onClick={handleEscalate} className="w-full text-red-400 border-red-900 hover:bg-red-900/20">
-                                Escalate Dispute
-                            </Button>
-                        </div>
-                    )}
-
-                    {(dispute.creatorId === currentUser.uid || dispute.creatorEmail === currentUser.email) && (
-                        <div className="mt-4 pt-4 border-t border-gray-800">
-                            <Button
-                                variant="secondary"
-                                onClick={async () => {
-                                    if (window.confirm("Are you sure? This will permanently delete the dispute.")) {
-                                        await deleteDoc(doc(db, "disputes", id));
-                                        navigate('/dashboard');
-                                    }
-                                }}
-                                className="w-full bg-red-600 text-white hover:bg-red-700 border-none"
-                            >
-                                <Trash2 size={16} className="mr-2" /> Delete Dispute
-                            </Button>
-                        </div>
-                    )}
-                </Card>
-
-                {/* Dispute Info */}
-                <Card className="p-5">
-                    <h3 className="text-gray-400 text-sm font-medium mb-3 uppercase tracking-wider">Case Details</h3>
-                    <h4 className="font-semibold text-white mb-2">{dispute.title}</h4>
-                    <div className="bg-gray-800/50 p-3 rounded text-sm text-gray-300 mb-4 max-h-40 overflow-y-auto">
-                        {dispute.description}
-                    </div>
-
-                    {dispute.evidence?.length > 0 && (
-                        <div>
-                            <h5 className="text-xs font-medium text-gray-500 mb-2">Evidence</h5>
-                            <div className="flex flex-wrap gap-2">
-                                {dispute.evidence.map((url, i) => (
-                                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block w-12 h-12 bg-gray-700 rounded-md overflow-hidden hover:opacity-80 transition-opacity border border-gray-600">
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                            <FileText size={20} />
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/20 border-x border-slate-700/50">
+                                    {dispute.messages?.length === 0 && (
+                                        <div className="text-center text-gray-500 mt-10">
+                                            <p>No messages yet. Start the conversation to resolve this issue.</p>
                                         </div>
-                                    </a>
-                                ))}
-                            </div>
+                                    )}
+
+                                    {dispute.messages?.map((msg, index) => {
+                                        const isMe = msg.sender === currentUser.email;
+                                        const senderName = msg.sender.split('@')[0];
+                                        return (
+                                            <div key={index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-[80%] rounded-2xl p-3.5 shadow-sm ${isMe
+                                                    ? 'bg-blue-600/90 text-white rounded-tr-sm'
+                                                    : 'bg-slate-700/80 text-gray-100 rounded-tl-sm'
+                                                    }`}>
+                                                    {!isMe && (
+                                                        <p className="text-[10px] font-bold text-blue-300 mb-1 uppercase tracking-wider">
+                                                            {senderName}
+                                                        </p>
+                                                    )}
+                                                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                                                    <span className="text-[10px] opacity-60 block mt-1 text-right">
+                                                        {msg.timestamp?.seconds ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Sending...'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    <div ref={messagesEndRef} />
+                                </div>
+
+                                <form onSubmit={handleSendMessage} className="p-4 border-t border-b border-x border-gray-800 bg-gray-900/50 rounded-b-xl border-slate-700/50">
+                                    <div className="flex gap-3">
+                                        <input
+                                            className="flex-1 bg-slate-800/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none disabled:opacity-50 transition-all placeholder-gray-500"
+                                            placeholder={isResolved ? "Dispute Resolved" : "Type your message..."}
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            disabled={isResolved || (dispute.messages?.length >= MAX_MESSAGES)}
+                                        />
+                                        <Button
+                                            type="submit"
+                                            disabled={!newMessage.trim() || isResolved || (dispute.messages?.length >= MAX_MESSAGES)}
+                                            className="px-5 rounded-lg"
+                                        >
+                                            <Send size={18} />
+                                        </Button>
+                                    </div>
+                                    <div className="mt-2 text-center">
+                                        <span className="text-[10px] text-gray-500 uppercase tracking-widest">{dispute.messages?.length}/{MAX_MESSAGES} Messages exchanged</span>
+                                    </div>
+                                </form>
+                            </Card>
                         </div>
-                    )}
-                </Card>
 
-                {/* AI Analysis Section */}
-                <Card className="p-5 relative overflow-hidden border-blue-500/30">
-                    <div className="absolute top-0 right-0 p-3 opacity-10">
-                        <Shield size={60} />
-                    </div>
+                        {/* Right: Info Sidebar */}
+                        <div className="w-full md:w-80 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+                            <Card className="p-5 border-slate-700/50">
+                                <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4">Case Details</h3>
+                                <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 text-sm text-gray-300 leading-relaxed mb-4">
+                                    {dispute.description}
+                                </div>
 
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-blue-400 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                            <Sparkles size={16} />
-                            AI Mediator
-                        </h3>
-                        {dispute.aiAnalysis && (
-                            <button
-                                onClick={handleGenerateAnalysis}
-                                disabled={analyzing}
-                                className="text-xs text-blue-400 hover:text-white transition-colors flex items-center gap-1"
-                                title="Regenerate Analysis"
-                            >
-                                <Sparkles size={12} /> Regenerate
-                            </button>
-                        )}
-                    </div>
-
-                    {!dispute.aiAnalysis && (
-                        <div className="flex justify-center my-4 relative z-10">
-                            <button
-                                onClick={handleGenerateAnalysis}
-                                disabled={analyzing}
-                                className="btn btn-ai-gen"
-                            >
-                                {analyzing ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Analyzing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sparkles size={16} />
-                                        Generate AI Analysis
-                                    </>
+                                {dispute.evidence?.length > 0 && (
+                                    <div>
+                                        <h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Evidence</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {dispute.evidence.map((url, i) => (
+                                                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center text-gray-400 border border-slate-700 hover:border-blue-500/50 hover:bg-slate-700 hover:text-white transition-all">
+                                                    <FileText size={18} />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
-                            </button>
-                        </div>
-                    )}
+                            </Card>
 
-                    {analyzing ? (
-                        <div className="text-center py-6">
-                            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                            <p className="text-xs text-blue-300">Reviewing evidence & statements...</p>
+                            <Card className="p-5 border-slate-700/50">
+                                <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4">Actions</h3>
+                                <div className="space-y-3">
+                                    {!isResolved && (
+                                        <>
+                                            <Button variant="secondary" onClick={handleResolve} className="w-full justify-start text-sm hover:border-green-500/30 hover:bg-green-500/5 hover:text-green-400 transition-colors">
+                                                <CheckCircle size={16} className="mr-2" /> Mark as Resolved
+                                            </Button>
+                                            <Button variant="secondary" onClick={handleEscalate} className="w-full justify-start text-sm hover:border-red-500/30 hover:bg-red-500/5 hover:text-red-400 transition-colors">
+                                                <Shield size={16} className="mr-2" /> Escalate to Admin
+                                            </Button>
+                                        </>
+                                    )}
+                                    <Button variant="secondary" onClick={() => navigate('/dashboard')} className="w-full justify-start text-sm">
+                                        Exit to Dashboard
+                                    </Button>
+                                </div>
+
+                                {(dispute.creatorId === currentUser.uid || dispute.creatorEmail === currentUser.email) && (
+                                    <div className="mt-6 pt-4 border-t border-slate-800">
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm("Are you sure? This will permanently delete the dispute.")) {
+                                                    await deleteDoc(doc(db, "disputes", id));
+                                                    navigate('/dashboard');
+                                                }
+                                            }}
+                                            className="w-full text-xs text-red-500/70 hover:text-red-400 flex items-center justify-center gap-2 py-2"
+                                        >
+                                            <Trash2 size={12} /> Delete Permanently
+                                        </button>
+                                    </div>
+                                )}
+                            </Card>
                         </div>
-                    ) : dispute.aiAnalysis ? (
-                        <div className="space-y-4 animate-fade-in relative z-10">
-                            <div>
-                                <h4 className="text-white font-medium mb-1">Summary</h4>
-                                <p className="text-sm text-gray-400 leading-relaxed">{dispute.aiAnalysis.summary}</p>
+                    </div>
+                )}
+
+                {/* --- RESOLUTION TAB --- */}
+                {activeTab === 'resolution' && (
+                    <div className="h-full overflow-y-auto pr-2 custom-scrollbar pb-10">
+                        <div className="max-w-4xl mx-auto">
+
+                            {/* Dashboard Header */}
+                            <div className="text-center mb-10 mt-6 animate-fade-in">
+                                <h2 className="text-3xl font-bold text-white mb-2">AI Resolution Center</h2>
+                                <p className="text-gray-400 max-w-lg mx-auto">
+                                    Our impartial AI mediator analyzes the chat and evidence to propose
+                                    fair solutions. Vote on suggestions to reach a binding agreement.
+                                </p>
                             </div>
 
-                            {dispute.aiAnalysis.evidenceAnalysis && (
-                                <div className="bg-blue-900/10 border border-blue-500/20 p-3 rounded-md">
-                                    <h4 className="text-blue-400 font-medium text-xs uppercase mb-1 flex items-center gap-1">
-                                        <FileText size={12} /> Evidence Analysis
-                                    </h4>
-                                    <p className="text-sm text-gray-300 italic">"{dispute.aiAnalysis.evidenceAnalysis}"</p>
+                            {/* Main Analysis Container */}
+                            {!dispute.aiAnalysis && !analyzing && (
+                                <div className="text-center py-16 bg-slate-900/30 border-2 border-dashed border-slate-800 rounded-3xl">
+                                    <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-400">
+                                        <Sparkles size={40} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-3">Ready to Mediate?</h3>
+                                    <p className="text-gray-400 mb-8 max-w-sm mx-auto">
+                                        Generate an AI analysis to get action-based suggestions grounded in your provided evidence.
+                                    </p>
+                                    <button
+                                        onClick={handleGenerateAnalysis}
+                                        className="btn btn-ai-gen text-lg px-8 py-3 shadow-xl hover:shadow-2xl shadow-blue-500/20"
+                                    >
+                                        Start AI Analysis
+                                    </button>
                                 </div>
                             )}
 
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-white font-medium">Suggested Resolutions</h4>
+                            {analyzing && (
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <div className="relative w-24 h-24 mb-6">
+                                        <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                                        <div className="absolute inset-0 border-4 border-t-blue-500 border-r-purple-500 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Sparkles size={24} className="text-white animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Analyzing Dispute...</h3>
+                                    <p className="text-gray-500">Reading evidence, reviewing timeline, and drafting suggestions.</p>
                                 </div>
-                                {dispute.aiAnalysis.suggestions && dispute.aiAnalysis.suggestions.length > 0 ? (
-                                    <ul className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                        {dispute.aiAnalysis.suggestions.map((suggestion, index) => {
+                            )}
+
+                            {dispute.aiAnalysis && !analyzing && (
+                                <div className="space-y-10 animate-fade-in pb-20">
+
+                                    {/* Summaries Stack (No Grid) */}
+                                    <div className="flex flex-col gap-6">
+                                        <div className="relative group w-full">
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
+                                            <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
+                                                <h4 className="text-sm font-black text-cyan-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                                                    <FileText size={18} /> CASE SUMMARY
+                                                </h4>
+                                                <p className="text-gray-300 leading-relaxed text-sm lg:text-base">
+                                                    {dispute.aiAnalysis.summary}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative group w-full">
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
+                                            <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
+                                                <h4 className="text-sm font-black text-fuchsia-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                                                    <Shield size={18} /> EVIDENCE REVIEW
+                                                </h4>
+                                                <p className="text-gray-300 leading-relaxed italic text-sm lg:text-base pl-4 border-l-4 border-fuchsia-500/50">
+                                                    "{dispute.aiAnalysis.evidenceAnalysis || "No critical evidence flags detected."}"
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Header */}
+                                    <div className="flex items-center justify-between mt-12 mb-8 px-2">
+                                        <h3 className="text-2xl font-black text-white flex items-center gap-4">
+                                            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 text-lg">
+                                                {dispute.aiAnalysis.suggestions?.length || 0}
+                                            </span>
+                                            PROPOSED RESOLUTIONS
+                                        </h3>
+                                        <button
+                                            onClick={handleGenerateAnalysis}
+                                            className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-all flex items-center gap-2"
+                                        >
+                                            <Sparkles size={14} /> Regenerate
+                                        </button>
+                                    </div>
+
+                                    {/* Suggestions Cards */}
+                                    <div className="space-y-6">
+                                        {dispute.aiAnalysis.suggestions?.map((suggestionText, index) => {
                                             const suggestionVotes = dispute.aiAnalysis.votes?.[index] || {};
                                             const myVote = suggestionVotes[currentUser.email];
-                                            const isAccepted = myVote === 'accept';
-                                            const isRejected = myVote === 'reject';
-
                                             const acceptedBy = Object.keys(suggestionVotes).filter(email => suggestionVotes[email] === 'accept');
-                                            const rejectedBy = Object.keys(suggestionVotes).filter(email => suggestionVotes[email] === 'reject');
+
+                                            let actionPart = suggestionText;
+                                            let reasonPart = null;
+                                            const reasonMatch = suggestionText.match(/(?:Reason|Reasoning|Rational):\s*(.*)/i);
+                                            if (reasonMatch) {
+                                                actionPart = suggestionText.replace(reasonMatch[0], '').trim();
+                                                reasonPart = reasonMatch[1].trim();
+                                            }
+                                            actionPart = actionPart.replace(/^(Suggestion\s*\d+:)\s*/i, '').trim();
 
                                             return (
-                                                <li key={index} className="bg-slate-800/80 border border-slate-700 rounded-lg overflow-hidden shadow-sm hover:border-blue-500/30 transition-all">
-                                                    <div className="p-3 flex gap-3">
-                                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold mt-0.5">
-                                                            {index + 1}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <p className={`text-sm text-gray-200 leading-relaxed ${isRejected ? 'text-gray-500 line-through' : ''}`}>
-                                                                {suggestion}
-                                                            </p>
+                                                <div
+                                                    key={index}
+                                                    className={`relative group rounded-3xl transition-all duration-300 ${myVote === 'accept'
+                                                        ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500/50 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]'
+                                                        : myVote === 'reject'
+                                                            ? 'bg-red-950/30 border border-red-500/30 opacity-75'
+                                                            : 'bg-slate-800/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/20'
+                                                        }`}
+                                                >
+                                                    <div className="p-8">
+                                                        <div className="flex flex-col md:flex-row gap-8">
+                                                            {/* Number Column */}
+                                                            <div className="flex-shrink-0">
+                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black border-2 ${myVote === 'accept' ? 'bg-green-500 text-white border-green-400 shadow-lg shadow-green-500/40' :
+                                                                    'bg-slate-900 text-slate-500 border-slate-700'
+                                                                    }`}>
+                                                                    {index + 1}
+                                                                </div>
+                                                            </div>
 
-                                                            {/* Actions Row */}
-                                                            <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/50">
-                                                                <div className="flex gap-2">
-                                                                    {acceptedBy.map((email, i) => (
-                                                                        <span key={i} className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded border border-green-900/50" title={email}>
-                                                                            ✓ {email.split('@')[0]}
-                                                                        </span>
-                                                                    ))}
+                                                            {/* Content Column */}
+                                                            <div className="flex-1 space-y-6">
+                                                                <div>
+                                                                    <h5 className={`text-xl font-bold leading-relaxed mb-4 ${myVote === 'reject' ? 'text-gray-500 line-through decoration-red-500/50' : 'text-white'}`}>
+                                                                        {actionPart}
+                                                                    </h5>
+                                                                    {reasonPart && (
+                                                                        <div className="bg-black/30 rounded-xl p-4 border border-white/5">
+                                                                            <p className="text-sm text-gray-400 leading-relaxed font-medium">
+                                                                                <span className="text-blue-400 font-bold uppercase text-xs tracking-wider mr-2">Rationale:</span>
+                                                                                {reasonPart}
+                                                                            </p>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
 
-                                                                <div className="flex gap-2">
-                                                                    <button
-                                                                        onClick={() => handleSuggestionVote(index, 'accept')}
-                                                                        className={`p-1.5 rounded transition-colors ${isAccepted ? 'bg-green-600 text-white' : 'hover:bg-green-900/30 text-gray-400 hover:text-green-400'}`}
-                                                                        title="Accept"
-                                                                    >
-                                                                        <CheckCircle size={16} />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleSuggestionVote(index, 'reject')}
-                                                                        className={`p-1.5 rounded transition-colors ${isRejected ? 'bg-red-600 text-white' : 'hover:bg-red-900/30 text-gray-400 hover:text-red-400'}`}
-                                                                        title="Reject"
-                                                                    >
-                                                                        <X size={16} />
-                                                                    </button>
+                                                                {/* Action Bar */}
+                                                                <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/5">
+
+                                                                    {/* Status Badges */}
+                                                                    <div className="flex items-center gap-3">
+                                                                        {acceptedBy.length > 0 ? (
+                                                                            <div className="flex -space-x-3">
+                                                                                {acceptedBy.map((email, i) => (
+                                                                                    <div key={i} className="w-10 h-10 rounded-full bg-slate-900 border-2 border-green-500 flex items-center justify-center text-xs font-bold text-green-400 shadow-lg shadow-green-900/50" title={email}>
+                                                                                        {email.charAt(0).toUpperCase()}
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="text-xs font-bold text-slate-600 uppercase tracking-widest px-3 py-1 rounded-full border border-slate-800">
+                                                                                Awaiting Votes
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Buttons */}
+                                                                    <div className="flex items-center gap-4">
+                                                                        <button
+                                                                            onClick={() => handleSuggestionVote(index, 'reject')}
+                                                                            className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'reject'
+                                                                                ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/40'
+                                                                                : 'bg-transparent border-slate-700 text-slate-500 hover:border-red-500 hover:text-red-500 hover:bg-red-500/10'
+                                                                                }`}
+                                                                        >
+                                                                            <span className="flex items-center gap-2">
+                                                                                <X size={16} strokeWidth={3} /> REJECT
+                                                                            </span>
+                                                                        </button>
+
+                                                                        <button
+                                                                            onClick={() => handleSuggestionVote(index, 'accept')}
+                                                                            className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'accept'
+                                                                                ? 'bg-green-500 border-green-400 text-black shadow-[0_0_20px_rgba(34,197,94,0.6)] scale-105'
+                                                                                : 'bg-transparent border-green-500/30 text-green-400 hover:bg-green-500 hover:border-green-400 hover:text-black hover:shadow-[0_0_20px_rgba(34,197,94,0.4)]'
+                                                                                }`}
+                                                                        >
+                                                                            <span className="flex items-center gap-2">
+                                                                                <CheckCircle size={16} strokeWidth={3} />
+                                                                                {myVote === 'accept' ? 'ACCEPTED' : 'ACCEPT'}
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </li>
+                                                </div>
                                             );
                                         })}
-                                    </ul>
-                                ) : (
-                                    <p className="text-gray-500 italic text-center text-sm py-4">No specific suggestions provided by AI.</p>
-                                )}
-                            </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    ) : (
-                        <div className="text-center py-2 text-gray-500 text-xs text-opacity-70">
-                            <p>Unlock AI-powered insights to resolve this instantly.</p>
-                        </div>
-                    )}
-                </Card>
-
+                    </div>
+                )}
             </div>
         </div>
     );
