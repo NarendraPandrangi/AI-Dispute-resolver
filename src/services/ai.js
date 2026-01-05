@@ -23,6 +23,10 @@ const extractTextFromEvidence = async (imageUrl) => {
  * UTILITY: Calls the Krutrim AI API to analyze the dispute.
  */
 export const analyzeDispute = async (disputeId, description, messages, evidenceUrls = []) => {
+    // Input Validation / Defaults
+    const safeDesc = description || "No description provided.";
+    const safeMessages = Array.isArray(messages) ? messages : [];
+
     console.log("Analyzing dispute with Krutrim...", { disputeId, evidenceCount: evidenceUrls.length });
 
     // 1. Process Evidence (OCR)
@@ -53,57 +57,51 @@ export const analyzeDispute = async (disputeId, description, messages, evidenceU
     };
 
     if (!KUTRIM_API_KEY) {
-        console.warn("Kutrim API Key is missing.");
+        console.warn("Kutrim API Key is missing. Check .env file.");
         return {
             ...fallbackResponse,
-            summary: "⚠️ AI SERVICE UNAVAILABLE: The Kutrim API Key is missing in the environment variables. Using static fallback data."
+            summary: "⚠️ SYSTEM ERROR: The VITE_KUTRIM_API_KEY is missing. Please check your .env file and restart the server.",
+            suggestions: ["Check .env file", "Restart Server", "Verify API Key"]
         };
     }
 
     // Construct the prompt
-    const messageHistory = messages.map(m => `${m.sender}: ${m.content}`).join("\n");
+    const messageHistory = safeMessages.map(m => `${m.sender}: ${m.content}`).join("\n");
 
-    // Updated System Prompt with One-Shot Example to prevent empty JSON
-    const systemPrompt = `You are a strict JSON-only API. You must not generate any conversational text, formatting, or markdown. Output ONLY valid JSON.
+    // Robust System Prompt
+    const systemPrompt = `You are a specialized Legal Dispute Mediator AI. Your ONLY job is to output a VALID JSON object. Do not include markdown formatting or conversational text.
+    
+    GUIDELINES:
+    1. Analyze the dispute impartially.
+    2. Provide **5 to 7** distinct resolution suggestions.
+    3. Each suggestion MUST be **detailed and actionable** (approx 2-3 sentences each). Explain strictly "What to do" and "Why it helps".
+    
+    REQUIRED JSON STRUCTURE:
+    {
+      "summary": "A concise 2-sentence summary of the core conflict.",
+      "sentiment": "One word: Neutral, Tense, Hostile, or Cooperative.",
+      "suggestions": [
+        "Suggestion 1: [Action]... [Reasoning]...",
+        "Suggestion 2: [Action]... [Reasoning]...",
+        "Suggestion 3: [Action]... [Reasoning]...",
+        "Suggestion 4: [Action]... [Reasoning]...",
+        "Suggestion 5: [Action]... [Reasoning]..."
+      ],
+      "abusiveLanguageDetected": boolean,
+      "evidenceAnalysis": "A short analysis of the provided evidence text (if any)."
+    }`;
 
-RESPONSE FORMAT:
-{
-  "summary": "The buyer claims the item was damaged, while the seller provides proof of safe packaging.",
-  "sentiment": "Tense",
-  "suggestions": [
-    "Buyer should upload photos of the damage.",
-    "Seller should share shipping insurance details.",
-    "Both parties should discuss a partial refund.",
-    "Review platform refund policies.",
-    "Agree on a return shipping method.",
-    "Consult consumer protection agency.",
-    "Offer store credit as alternative.",
-    "Escalate to platform support team.",
-    "Mediation via third-party service.",
-    "Check credit card chargeback options."
-  ],
-  "abusiveLanguageDetected": false,
-  "evidenceAnalysis": "The provided receipt shows a date of Dec 20, matching the shipping claim."
-}`;
+    const userPrompt = `Dispute Description: "${safeDesc}"
+    
+    Chat History: 
+    ${messageHistory}
+    
+    Evidence Text:
+    ${evidenceText}
+    
+    Analyze the above and return the JSON object.`;
 
-    const userPrompt = `TASK: Analyze the dispute below and provide the requested JSON output (summary, sentiment, suggestions, abusiveLanguageDetected, evidenceAnalysis).
-
---- INPUT DATA START ---
-Dispute Description:
-${description}
-
-Message History:
-${messageHistory}
-
-Evidence Analysis (OCR):
-${evidenceText || "No readable text found."}
---- INPUT DATA END ---
-
-[System Note: ${new Date().toISOString()}]
-
-REMINDER: Return ONLY the specific analysis JSON object defined in the System Prompt. Do not just convert the input data into JSON.`;
-
-    console.log("Sending Prompt to AI:", userPrompt); // DEBUG: Ensure inputs are not empty
+    console.log("Sending Prompt to AI:", userPrompt);
 
     try {
         const response = await fetch(KUTRIM_API_URL, {
@@ -113,13 +111,13 @@ REMINDER: Return ONLY the specific analysis JSON object defined in the System Pr
                 "Authorization": `Bearer ${KUTRIM_API_KEY}`
             },
             body: JSON.stringify({
-                model: "Krutrim-spectre-v2", // Using Krutrim's model
+                model: "Krutrim-spectre-v2",
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: userPrompt }
                 ],
-                max_tokens: 1500, // Increased for evidence
-                temperature: 0.3 // Lower temperature for more deterministic JSON
+                max_tokens: 1500,
+                temperature: 0.2
             })
         });
 
@@ -131,71 +129,98 @@ REMINDER: Return ONLY the specific analysis JSON object defined in the System Pr
         const data = await response.json();
         const aiContent = data.choices[0].message.content;
 
-        // Parse the JSON content
-        try {
-            // Remove code blocks if present (case insensitive)
-            const cleanJson = aiContent.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+        // --- ROBUST PARSING LOGIC ---
+        let finalParsed = {};
 
-            // Attempt to find the first '{' and last '}' to extract JSON if there's intro text
+        try {
+            // 1. Clean wrappers
+            let cleanJson = aiContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+            // 2. Extract outer bracket
             const firstBrace = cleanJson.indexOf('{');
             const lastBrace = cleanJson.lastIndexOf('}');
-            const jsonString = (firstBrace !== -1 && lastBrace !== -1)
-                ? cleanJson.substring(firstBrace, lastBrace + 1)
-                : cleanJson;
 
-            const parsed = JSON.parse(jsonString);
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+            }
 
-            // Validation: Check if the AI returned an error object or missing fields
-            if (!parsed.summary && !parsed.suggestions) {
-                console.warn("AI returned JSON but missing expected fields:", parsed);
+            // 3. Attempt Parse
+            finalParsed = JSON.parse(cleanJson);
+
+            // 4. Validate Fields
+            if (!finalParsed.summary && (!finalParsed.suggestions || finalParsed.suggestions.length === 0)) {
+                throw new Error("Missing key fields in JSON response");
+            }
+
+        } catch (parseError) {
+            console.warn("Standard JSON parsing failed. Attempting regex extraction...", parseError);
+            console.log("Raw Content:", aiContent);
+
+            // Fallback Regex Extraction
+            const summaryMatch = aiContent.match(/"summary"\s*:\s*"([\s\S]*?)"/) || aiContent.match(/summary:\s*(.*?)(?=\n|")/i);
+            finalParsed.summary = summaryMatch ? summaryMatch[1] : null;
+
+            const sentimentMatch = aiContent.match(/"sentiment"\s*:\s*"([^"]*)"/i);
+            finalParsed.sentiment = sentimentMatch ? sentimentMatch[1] : "Neutral";
+
+            const evidenceMatch = aiContent.match(/"evidenceAnalysis"\s*:\s*"([\s\S]*?)"/);
+            finalParsed.evidenceAnalysis = evidenceMatch ? evidenceMatch[1] : "Analysis unavailable";
+
+            const suggestionsMatch = aiContent.match(/"suggestions"\s*:\s*\[([\s\S]*?)\]/);
+
+            // Parse suggestions array manually if found
+            let extractedSuggestions = [];
+            if (suggestionsMatch && suggestionsMatch[1]) {
+                const itemMatches = suggestionsMatch[1].match(/"([^"\\]*(?:\\.[^"\\]*)*)"/g);
+                if (itemMatches) {
+                    extractedSuggestions = itemMatches.map(s => s.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
+                }
+            }
+
+            // FALLBACK: Text-based List Parsing (if JSON-like extraction failed)
+            if (extractedSuggestions.length === 0) {
+                // Look for lines starting with - or * or 1. after "Suggestions"
+                const suggestionsBlockMatch = aiContent.match(/Suggestions:?([\s\S]*?)(?:$|Abusive|Evidence)/i);
+                if (suggestionsBlockMatch && suggestionsBlockMatch[1]) {
+                    const lines = suggestionsBlockMatch[1].split('\n');
+                    extractedSuggestions = lines
+                        .map(line => line.trim())
+                        .filter(line => line.match(/^[-*•]|\d+\./)) // Filter lines that look like list items
+                        .map(line => line.replace(/^[-*•]|\d+\.\s*/, '').trim()); // Clean bullets
+                }
+            }
+
+            finalParsed.suggestions = extractedSuggestions;
+
+            // Check if we got anything useful
+            if (!finalParsed.summary && extractedSuggestions.length === 0) {
                 return {
-                    summary: typeof parsed === 'string' ? parsed : JSON.stringify(parsed), // DEBUG: Show what we got
-                    sentiment: "Neutral",
+                    summary: "AI Response format was invalid. Please try regenerating.",
+                    sentiment: "Unknown",
                     suggestions: [],
                     abusiveLanguageDetected: false,
-                    evidenceAnalysis: "Structure error in AI response."
+                    evidenceAnalysis: "Parsing completely failed."
                 };
             }
-
-            // Responsive Validation
-            let finalSuggestions = [];
-            if (Array.isArray(parsed.suggestions)) {
-                finalSuggestions = parsed.suggestions;
-            } else if (typeof parsed.suggestions === 'string') {
-                // Try to split logic if AI returned a string list
-                finalSuggestions = parsed.suggestions.split(/\n/).filter(s => s.trim().length > 0);
-            }
-
-            const debugSummarySuffix = (finalSuggestions.length === 0)
-                ? `\n\n[DEBUG: Suggestions missing. Raw AI response: ${JSON.stringify(parsed)}]`
-                : "";
-
-            // Validate and Merge with default if fields are missing
-            return {
-                summary: (parsed.summary || "AI Analysis summary missing.") + debugSummarySuffix,
-                sentiment: parsed.sentiment || "Neutral",
-                suggestions: finalSuggestions.length > 0 ? finalSuggestions.slice(0, 5) : [],
-                abusiveLanguageDetected: parsed.abusiveLanguageDetected || false,
-                evidenceAnalysis: parsed.evidenceAnalysis || "No specific evidence analysis provided."
-            };
-        } catch (e) {
-            console.error("Failed to parse AI response as JSON", e);
-            console.log("Raw AI Content:", aiContent);
-            return {
-                summary: aiContent.substring(0, 300) + "...", // Show raw content preview
-                sentiment: "Unknown",
-                suggestions: [],
-                abusiveLanguageDetected: false,
-                evidenceAnalysis: "Parsing failed - Raw response received."
-            };
         }
+
+        // 5. Return Valid Data
+        return {
+            summary: finalParsed.summary || "Summary unavailable.",
+            sentiment: finalParsed.sentiment || "Neutral",
+            suggestions: (Array.isArray(finalParsed.suggestions) && finalParsed.suggestions.length > 0)
+                ? finalParsed.suggestions
+                : ["Unable to parse suggestions. Please try regenerating."],
+            abusiveLanguageDetected: !!finalParsed.abusiveLanguageDetected,
+            evidenceAnalysis: finalParsed.evidenceAnalysis || "Evidence analysis unavailable."
+        };
 
     } catch (error) {
         console.error("Krutrim AI Analysis Failed:", error);
         return {
             ...fallbackResponse,
             summary: `FAILED: ${error.message}`,
-            suggestions: [] // Ensure we don't show static suggestions on error
+            suggestions: []
         };
     }
 };
