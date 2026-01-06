@@ -187,20 +187,20 @@ const DisputeDetails = () => {
                     </h2>
                 </div>
 
-                <div className="flex items-center shadow-2xl">
+                <div className="flex items-center gap-2 rounded-xl overflow-hidden border border-gray-700">
                     <button
                         onClick={() => setActiveTab('discussion')}
-                        className={`relative px-12 py-4 text-lg font-black tracking-wider rounded-l-2xl border-y-2 border-l-2 transition-all duration-300 flex items-center gap-3 ${activeTab === 'discussion' ? 'bg-sky-400 border-sky-400 text-black shadow-[0_0_30px_rgba(56,189,248,0.6)] z-10' : 'bg-black/40 border-slate-700 text-sky-400 hover:bg-sky-400/10 hover:border-sky-400/50 z-0'} border-r-0`}
+                        className={`flex-1 px-6 py-3 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === 'discussion' ? 'bg-blue-600 text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:text-white hover:bg-white/5'}`}
                     >
-                        <MessageSquare size={24} strokeWidth={2.5} />
-                        DISCUSSION
+                        <MessageSquare size={18} />
+                        Discussion
                     </button>
                     <button
                         onClick={() => setActiveTab('resolution')}
-                        className={`relative px-12 py-4 text-lg font-black tracking-wider rounded-r-2xl border-2 transition-all duration-300 flex items-center gap-3 ${activeTab === 'resolution' ? 'bg-fuchsia-500 border-fuchsia-500 text-white shadow-[0_0_30px_rgba(217,70,239,0.6)] z-10' : 'bg-black/40 border-slate-700 text-fuchsia-500 hover:bg-fuchsia-500/10 hover:border-fuchsia-500/50 z-0'}`}
+                        className={`flex-1 px-6 py-3 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === 'resolution' ? 'bg-emerald-600 text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:text-white hover:bg-white/5'}`}
                     >
-                        <Sparkles size={24} strokeWidth={2.5} className={activeTab === 'resolution' ? 'animate-pulse' : ''} />
-                        RESOLUTION CENTER
+                        <Sparkles size={18} />
+                        Resolution Center
                     </button>
                 </div>
             </div>
@@ -384,7 +384,7 @@ const DisputeDetails = () => {
                                     <div className="flex flex-col items-center justify-center py-20">
                                         <div className="relative w-24 h-24 mb-6">
                                             <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
-                                            <div className="absolute inset-0 border-4 border-t-blue-500 border-r-purple-500 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                                            <div className="absolute inset-0 border-4 border-t-blue-500 border-r-emerald-500 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
                                             <div className="absolute inset-0 flex items-center justify-center">
                                                 <Sparkles size={24} className="text-white animate-pulse" />
                                             </div>
@@ -412,12 +412,11 @@ const DisputeDetails = () => {
                                             </div>
 
                                             <div className="relative group w-full">
-                                                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
-                                                <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
-                                                    <h4 className="text-sm font-black text-fuchsia-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
-                                                        <Shield size={18} /> EVIDENCE REVIEW
+                                                <div className="relative bg-slate-900/90 p-8 rounded-xl border border-gray-700 backdrop-blur-xl h-full hover:border-blue-500/30 transition-colors">
+                                                    <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                                                        <Shield size={18} /> Evidence Review
                                                     </h4>
-                                                    <p className="text-gray-300 leading-relaxed italic text-sm lg:text-base pl-4 border-l-4 border-fuchsia-500/50">
+                                                    <p className="text-gray-300 leading-relaxed text-sm lg:text-base pl-4 border-l-2 border-blue-500/50">
                                                         "{dispute.aiAnalysis.evidenceAnalysis || "No critical evidence flags detected."}"
                                                     </p>
                                                 </div>

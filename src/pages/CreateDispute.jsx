@@ -137,7 +137,7 @@ const CreateDispute = () => {
 
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-gray-300">Evidence (Optional)</label>
-                        <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center hover:bg-gray-800/50 transition-colors cursor-pointer relative">
+                        <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-blue-500/50 hover:bg-white/5 transition-colors cursor-pointer relative">
                             <input
                                 type="file"
                                 multiple
@@ -151,18 +151,18 @@ const CreateDispute = () => {
                         {files.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {files.map((file, i) => (
-                                    <div key={i} className="bg-gray-800 px-3 py-1 rounded-full text-xs flex items-center gap-2 text-gray-300">
+                                    <div key={i} className="bg-gray-800 px-3 py-2 rounded-lg text-xs flex items-center gap-2 text-gray-300 border border-gray-700">
                                         <span className="truncate max-w-[150px]">{file.name}</span>
-                                        <button type="button" onClick={() => removeFile(i)} className="hover:text-red-400"><X size={14} /></button>
+                                        <button type="button" onClick={() => removeFile(i)} className="hover:text-red-400 transition-colors"><X size={14} /></button>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    <div className="pt-4 border-t border-gray-700 flex justify-end gap-3">
-                        <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Cancel</Button>
-                        <Button type="submit" disabled={loading}>
+                    <div className="pt-6 border-t border-gray-700 flex justify-end gap-4">
+                        <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')} className="btn-secondary px-6">Cancel</Button>
+                        <Button type="submit" disabled={loading} className="btn-primary px-6">
                             {loading ? 'Submitting...' : 'Submit Dispute'}
                         </Button>
                     </div>
