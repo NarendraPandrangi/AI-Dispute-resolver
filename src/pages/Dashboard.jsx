@@ -59,9 +59,9 @@ const Dashboard = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'resolved': return 'text-green-400 bg-green-400/10';
-            case 'action_required': return 'text-red-400 bg-red-400/10';
-            default: return 'text-yellow-400 bg-yellow-400/10';
+            case 'resolved': return 'text-green-400 bg-green-500/10 border border-green-500/30';
+            case 'action_required': return 'text-red-400 bg-red-500/10 border border-red-500/30';
+            default: return 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/30';
         }
     };
 
@@ -137,7 +137,7 @@ const Dashboard = () => {
                             <div className="flex items-center gap-6">
                                 <div className="flex -space-x-2">
                                     {dispute.participants?.map((email, i) => (
-                                        <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[var(--bg-card)] flex items-center justify-center text-xs text-white first:bg-violet-600 last:bg-fuchsia-600" title={email}>
+                                        <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[var(--bg-card)] flex items-center justify-center text-xs text-white first:bg-blue-600 last:bg-sky-600" title={email}>
                                             {email[0].toUpperCase()}
                                         </div>
                                     ))}
@@ -146,7 +146,7 @@ const Dashboard = () => {
                                 {(dispute.creatorId === currentUser.uid || dispute.creatorEmail === currentUser.email) && (
                                     <button
                                         onClick={(e) => handleDelete(e, dispute.id)}
-                                        className="px-4 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors z-50 font-bold text-sm border border-red-500/20"
+                                        className="btn btn-danger px-4 py-2 text-sm font-semibold"
                                         title="Delete Case"
                                     >
                                         Delete

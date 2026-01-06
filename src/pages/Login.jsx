@@ -30,19 +30,18 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#030014]">
-            {/* Background Decorative Elements */}
-            <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-violet-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[var(--bg-dark)]">
+            {/* Subtle Background Accent */}
+            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="w-full max-w-md z-10 p-4">
                 <div className="text-center mb-8">
-                    <h2 className="heading-xl text-4xl mb-2">Welcome Back</h2>
+                    <h2 className="text-3xl font-bold mb-2 text-white">Welcome Back</h2>
                     <p className="text-gray-400">Sign in to manage your disputes</p>
                 </div>
 
-                <Card className="w-full glass-panel border-white/10 bg-white/5 backdrop-blur-xl">
-                    {error && <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded mb-4 text-sm">{error}</div>}
+                <Card className="w-full glass-panel">
+                    {error && <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <Input
@@ -64,7 +63,7 @@ const Login = () => {
                             placeholder="••••••••"
                         />
 
-                        <Button type="submit" className="w-full mt-4 h-12" disabled={loading}>
+                        <Button type="submit" className="w-full mt-6 btn-primary h-12" disabled={loading}>
                             {loading ? 'Signing In...' : 'Sign In'}
                         </Button>
                     </form>
@@ -77,7 +76,7 @@ const Login = () => {
 
                     <button
                         type="button"
-                        className="btn-google h-12 hover:bg-white hover:text-gray-900"
+                        className="btn-google"
                         onClick={async () => {
                             try {
                                 setLoading(true);
@@ -99,7 +98,7 @@ const Login = () => {
                         }}
                         disabled={loading}
                     >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path
                                 fill="#4285F4"
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -121,7 +120,7 @@ const Login = () => {
                     </button>
 
                     <div className="mt-6 text-center text-sm text-gray-400">
-                        Don't have an account? <Link to="/register" className="text-violet-400 hover:text-violet-300 font-medium">Create one</Link>
+                        Don't have an account? <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium">Create one</Link>
                     </div>
                 </Card>
             </div>

@@ -45,19 +45,19 @@ const Layout = () => {
             <Link
                 to={to}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
-                    ? 'bg-violet-600/10 text-[var(--primary-light)] border border-violet-600/20 shadow-[0_0_15px_rgba(124,58,237,0.15)]'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/30 font-medium'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
                     }`}
             >
                 <div className="relative">
                     <Icon size={20} />
                     {badge > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[#0f0729] transform scale-90 box-content">
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[var(--bg-card)] font-semibold">
                             {badge > 9 ? '9+' : badge}
                         </span>
                     )}
                 </div>
-                <span className="font-medium">{children}</span>
+                <span className="font-medium text-sm">{children}</span>
             </Link>
         );
     };
@@ -65,17 +65,17 @@ const Layout = () => {
     return (
         <div className="min-h-screen flex text-gray-100 font-sans">
             {/* Sidebar with Glass effect */}
-            <aside className="w-64 border-r border-white/5 bg-[var(--bg-card)]/80 backdrop-blur-xl hidden md:flex flex-col relative z-20">
-                <div className="p-6 border-b border-white/5">
+            <aside className="w-64 border-r border-white/10 bg-[var(--bg-card)] hidden md:flex flex-col relative z-20">
+                <div className="p-6 border-b border-white/10">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-900/20">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
                             <Scale size={20} className="text-white" />
                         </div>
-                        <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-violet-200">FairResolve</span>
+                        <span className="font-bold text-xl tracking-tight text-white">FairResolve</span>
                     </div>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 p-4 space-y-1">
                     <NavLink to="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
                     <NavLink to="/dashboard?filter=created_by_me" icon={FileText}>Created by Me</NavLink>
                     <NavLink to="/dashboard?filter=against_me" icon={ShieldAlert}>Filed Against Me</NavLink>
@@ -84,8 +84,8 @@ const Layout = () => {
                     <NavLink to="/profile" icon={Settings}>Settings</NavLink>
                 </nav>
 
-                <div className="p-4 border-t border-white/5">
-                    <Link to="/profile" className="flex items-center gap-3 px-4 py-3 mb-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group border border-transparent hover:border-white/5">
+                <div className="p-4 border-t border-white/10">
+                    <Link to="/profile" className="flex items-center gap-3 px-4 py-3 mb-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group border border-transparent hover:border-white/10">
                         {currentUser?.photoURL ? (
                             <img
                                 key={currentUser.photoURL}
@@ -95,12 +95,12 @@ const Layout = () => {
                                 className="w-8 h-8 rounded-full border border-gray-600 object-cover"
                             />
                         ) : (
-                            <div className="w-8 h-8 rounded-full bg-violet-900/30 flex items-center justify-center border border-violet-500/30">
-                                <User size={16} className="text-violet-300 group-hover:text-white" />
+                            <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center border border-blue-500/30">
+                                <User size={16} className="text-blue-300 group-hover:text-white" />
                             </div>
                         )}
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-medium truncate text-gray-200 group-hover:text-white">
+                            <p className="text-sm font-medium truncate text-gray-300 group-hover:text-white">
                                 {currentUser?.displayName || currentUser?.email?.split('@')[0]}
                             </p>
                             {currentUser?.displayName && (
@@ -120,12 +120,6 @@ const Layout = () => {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto relative">
-                {/* Dynamic Background */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-violet-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
-                    <div className="absolute bottom-[-20%] left-[-10%] w-[800px] h-[800px] bg-fuchsia-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
-                </div>
-
                 <div className="relative z-10 p-4 md:p-8 max-w-7xl mx-auto">
                     <Outlet />
                 </div>
