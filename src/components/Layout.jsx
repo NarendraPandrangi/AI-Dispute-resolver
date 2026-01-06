@@ -6,6 +6,31 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { Scale, LogOut, LayoutDashboard, PlusCircle, User, Bell, FileText, ShieldAlert, Settings } from 'lucide-react';
 
+const NavLink = ({ to, icon: Icon, children, badge, location }) => {
+    const currentFullPath = location.pathname + location.search;
+    const isActive = currentFullPath === to || (to === '/dashboard' && currentFullPath === '/dashboard');
+
+    return (
+        <Link
+            to={to}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
+                ? 'bg-blue-600/10 text-blue-400 border border-blue-600/30 font-medium'
+                : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
+                }`}
+        >
+            <div className="relative">
+                <Icon size={20} />
+                {badge > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[var(--bg-card)] font-semibold">
+                        {badge > 9 ? '9+' : badge}
+                    </span>
+                )}
+            </div>
+            <span className="font-medium text-sm">{children}</span>
+        </Link>
+    );
+};
+
 const Layout = () => {
     const { currentUser } = useAuth();
     const location = useLocation();
@@ -37,31 +62,6 @@ const Layout = () => {
         }
     };
 
-    const NavLink = ({ to, icon: Icon, children, badge }) => {
-        const currentFullPath = location.pathname + location.search;
-        const isActive = currentFullPath === to || (to === '/dashboard' && currentFullPath === '/dashboard');
-
-        return (
-            <Link
-                to={to}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/30 font-medium'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
-                    }`}
-            >
-                <div className="relative">
-                    <Icon size={20} />
-                    {badge > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[var(--bg-card)] font-semibold">
-                            {badge > 9 ? '9+' : badge}
-                        </span>
-                    )}
-                </div>
-                <span className="font-medium text-sm">{children}</span>
-            </Link>
-        );
-    };
-
     return (
         <div className="min-h-screen flex text-gray-100 font-sans">
             {/* Sidebar with Glass effect */}
@@ -76,12 +76,12 @@ const Layout = () => {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1">
-                    <NavLink to="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
-                    <NavLink to="/dashboard?filter=created_by_me" icon={FileText}>Created by Me</NavLink>
-                    <NavLink to="/dashboard?filter=against_me" icon={ShieldAlert}>Filed Against Me</NavLink>
-                    <NavLink to="/create-dispute" icon={PlusCircle}>New Dispute</NavLink>
-                    <NavLink to="/notifications" icon={Bell} badge={unreadCount}>Notifications</NavLink>
-                    <NavLink to="/profile" icon={Settings}>Settings</NavLink>
+                    <NavLink to="/dashboard" icon={LayoutDashboard} location={location}>Dashboard</NavLink>
+                    <NavLink to="/dashboard?filter=created_by_me" icon={FileText} location={location}>Created by Me</NavLink>
+                    <NavLink to="/dashboard?filter=against_me" icon={ShieldAlert} location={location}>Filed Against Me</NavLink>
+                    <NavLink to="/create-dispute" icon={PlusCircle} location={location}>New Dispute</NavLink>
+                    <NavLink to="/notifications" icon={Bell} badge={unreadCount} location={location}>Notifications</NavLink>
+                    <NavLink to="/profile" icon={Settings} location={location}>Settings</NavLink>
                 </nav>
 
                 <div className="p-4 border-t border-white/10">
