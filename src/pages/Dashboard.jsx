@@ -137,7 +137,7 @@ const Dashboard = () => {
                             <div className="flex items-center gap-6">
                                 <div className="flex -space-x-2">
                                     {dispute.participants?.map((email, i) => (
-                                        <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[#1e293b] flex items-center justify-center text-xs text-white first:bg-blue-600 last:bg-purple-600" title={email}>
+                                        <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[var(--bg-card)] flex items-center justify-center text-xs text-white first:bg-violet-600 last:bg-fuchsia-600" title={email}>
                                             {email[0].toUpperCase()}
                                         </div>
                                     ))}

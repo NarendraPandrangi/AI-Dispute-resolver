@@ -8,7 +8,7 @@ import { createNotification } from '../services/notifications';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Send, FileText, Shield, CheckCircle, Clock, Sparkles, X, Trash2, Scale, MessageSquare } from 'lucide-react';
+import { Send, FileText, Shield, CheckCircle, Clock, Sparkles, X, Trash2, Scale, MessageSquare, Download } from 'lucide-react';
 
 const MAX_MESSAGES = 20;
 
@@ -302,6 +302,15 @@ const DisputeDetails = () => {
                             <Card className="p-5 border-slate-700/50">
                                 <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4">Actions</h3>
                                 <div className="space-y-3">
+                                    {isResolved && (
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => generateResolutionPDF(dispute, dispute.resolution || "Resolved Manually")}
+                                            className="w-full justify-start text-sm border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 hover:text-green-300 transition-colors mb-3"
+                                        >
+                                            <Download size={16} className="mr-2" /> Download Agreement
+                                        </Button>
+                                    )}
                                     {!isResolved && (
                                         <>
                                             <Button variant="secondary" onClick={handleResolve} className="w-full justify-start text-sm hover:border-green-500/30 hover:bg-green-500/5 hover:text-green-400 transition-colors">
@@ -338,245 +347,255 @@ const DisputeDetails = () => {
                 )}
 
                 {/* --- RESOLUTION TAB --- */}
-                {activeTab === 'resolution' && (
-                    <div className="h-full overflow-y-auto pr-2 custom-scrollbar pb-10">
-                        <div className="max-w-4xl mx-auto">
+                {
+                    activeTab === 'resolution' && (
+                        <div className="h-full overflow-y-auto pr-2 custom-scrollbar pb-10">
+                            <div className="max-w-4xl mx-auto">
 
-                            {/* Dashboard Header */}
-                            <div className="text-center mb-10 mt-6 animate-fade-in">
-                                <h2 className="text-3xl font-bold text-white mb-2">AI Resolution Center</h2>
-                                <p className="text-gray-400 max-w-lg mx-auto">
-                                    Our impartial AI mediator analyzes the chat and evidence to propose
-                                    fair solutions. Vote on suggestions to reach a binding agreement.
-                                </p>
-                            </div>
-
-                            {/* Main Analysis Container */}
-                            {!dispute.aiAnalysis && !analyzing && (
-                                <div className="text-center py-16 bg-slate-900/30 border-2 border-dashed border-slate-800 rounded-3xl">
-                                    <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-400">
-                                        <Sparkles size={40} />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-white mb-3">Ready to Mediate?</h3>
-                                    <p className="text-gray-400 mb-8 max-w-sm mx-auto">
-                                        Generate an AI analysis to get action-based suggestions grounded in your provided evidence.
+                                {/* Dashboard Header */}
+                                <div className="text-center mb-10 mt-6 animate-fade-in">
+                                    <h2 className="text-3xl font-bold text-white mb-2">AI Resolution Center</h2>
+                                    <p className="text-gray-400 max-w-lg mx-auto">
+                                        Our impartial AI mediator analyzes the chat and evidence to propose
+                                        fair solutions. Vote on suggestions to reach a binding agreement.
                                     </p>
-                                    <button
-                                        onClick={handleGenerateAnalysis}
-                                        className="btn btn-ai-gen text-lg px-8 py-3 shadow-xl hover:shadow-2xl shadow-blue-500/20"
-                                    >
-                                        Start AI Analysis
-                                    </button>
                                 </div>
-                            )}
 
-                            {analyzing && (
-                                <div className="flex flex-col items-center justify-center py-20">
-                                    <div className="relative w-24 h-24 mb-6">
-                                        <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
-                                        <div className="absolute inset-0 border-4 border-t-blue-500 border-r-purple-500 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <Sparkles size={24} className="text-white animate-pulse" />
+                                {/* Main Analysis Container */}
+                                {!dispute.aiAnalysis && !analyzing && (
+                                    <div className="text-center py-16 bg-slate-900/30 border-2 border-dashed border-slate-800 rounded-3xl">
+                                        <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-400">
+                                            <Sparkles size={40} />
                                         </div>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Analyzing Dispute...</h3>
-                                    <p className="text-gray-500">Reading evidence, reviewing timeline, and drafting suggestions.</p>
-                                </div>
-                            )}
-
-                            {dispute.aiAnalysis && !analyzing && (
-                                <div className="space-y-10 animate-fade-in pb-20">
-
-                                    {/* Summaries Stack (No Grid) */}
-                                    <div className="flex flex-col gap-6">
-                                        <div className="relative group w-full">
-                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
-                                            <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
-                                                <h4 className="text-sm font-black text-cyan-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
-                                                    <FileText size={18} /> CASE SUMMARY
-                                                </h4>
-                                                <p className="text-gray-300 leading-relaxed text-sm lg:text-base">
-                                                    {dispute.aiAnalysis.summary}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="relative group w-full">
-                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
-                                            <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
-                                                <h4 className="text-sm font-black text-fuchsia-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
-                                                    <Shield size={18} /> EVIDENCE REVIEW
-                                                </h4>
-                                                <p className="text-gray-300 leading-relaxed italic text-sm lg:text-base pl-4 border-l-4 border-fuchsia-500/50">
-                                                    "{dispute.aiAnalysis.evidenceAnalysis || "No critical evidence flags detected."}"
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Header */}
-                                    <div className="flex items-center justify-between mt-12 mb-8 px-2">
-                                        <h3 className="text-2xl font-black text-white flex items-center gap-4">
-                                            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 text-lg">
-                                                {dispute.aiAnalysis.suggestions?.length || 0}
-                                            </span>
-                                            PROPOSED RESOLUTIONS
-                                        </h3>
+                                        <h3 className="text-xl font-bold text-white mb-3">Ready to Mediate?</h3>
+                                        <p className="text-gray-400 mb-8 max-w-sm mx-auto">
+                                            Generate an AI analysis to get action-based suggestions grounded in your provided evidence.
+                                        </p>
                                         <button
                                             onClick={handleGenerateAnalysis}
-                                            className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-all flex items-center gap-2"
+                                            className="btn btn-ai-gen text-lg px-8 py-3 shadow-xl hover:shadow-2xl shadow-blue-500/20"
                                         >
-                                            <Sparkles size={14} /> Regenerate
+                                            Start AI Analysis
                                         </button>
                                     </div>
+                                )}
 
-                                    {/* Suggestions Cards */}
-                                    <div className="space-y-6">
-                                        {dispute.aiAnalysis.suggestions?.map((suggestionText, index) => {
-                                            const suggestionVotes = dispute.aiAnalysis.votes?.[index] || {};
-                                            const myVote = suggestionVotes[currentUser.email];
-                                            const acceptedBy = Object.keys(suggestionVotes).filter(email => suggestionVotes[email] === 'accept');
+                                {analyzing && (
+                                    <div className="flex flex-col items-center justify-center py-20">
+                                        <div className="relative w-24 h-24 mb-6">
+                                            <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                                            <div className="absolute inset-0 border-4 border-t-blue-500 border-r-purple-500 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <Sparkles size={24} className="text-white animate-pulse" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white mb-2">Analyzing Dispute...</h3>
+                                        <p className="text-gray-500">Reading evidence, reviewing timeline, and drafting suggestions.</p>
+                                    </div>
+                                )}
 
-                                            // Check if THIS suggestion is fully resolved (consensus)
-                                            const participants = dispute.participants || [];
-                                            const isConsensus = participants.length > 0 && participants.every(p => suggestionVotes[p] === 'accept');
+                                {dispute.aiAnalysis && !analyzing && (
+                                    <div className="space-y-10 animate-fade-in pb-20">
 
-                                            // Check if ANY suggestion is resolved
-                                            const resolutionText = dispute.resolution || (dispute.status === 'resolved' ? dispute.aiAnalysis.suggestions.find((_, i) => {
-                                                const votes = dispute.aiAnalysis.votes?.[i] || {};
-                                                return participants.length > 0 && participants.every(p => votes[p] === 'accept');
-                                            }) : null);
+                                        {/* Summaries Stack (No Grid) */}
+                                        <div className="flex flex-col gap-6">
+                                            <div className="relative group w-full">
+                                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
+                                                <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
+                                                    <h4 className="text-sm font-black text-cyan-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                                                        <FileText size={18} /> CASE SUMMARY
+                                                    </h4>
+                                                    <p className="text-gray-300 leading-relaxed text-sm lg:text-base">
+                                                        {dispute.aiAnalysis.summary}
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                                            const isResolved = !!resolutionText;
-                                            const isThisTheResolution = isConsensus || (resolutionText === suggestionText);
+                                            <div className="relative group w-full">
+                                                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
+                                                <div className="relative bg-slate-900/90 p-8 rounded-2xl border border-white/10 backdrop-blur-xl h-full">
+                                                    <h4 className="text-sm font-black text-fuchsia-400 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                                                        <Shield size={18} /> EVIDENCE REVIEW
+                                                    </h4>
+                                                    <p className="text-gray-300 leading-relaxed italic text-sm lg:text-base pl-4 border-l-4 border-fuchsia-500/50">
+                                                        "{dispute.aiAnalysis.evidenceAnalysis || "No critical evidence flags detected."}"
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                            let actionPart = suggestionText;
-                                            let reasonPart = null;
-                                            const reasonMatch = suggestionText.match(/(?:Reason|Reasoning|Rational):\s*(.*)/i);
-                                            if (reasonMatch) {
-                                                actionPart = suggestionText.replace(reasonMatch[0], '').trim();
-                                                reasonPart = reasonMatch[1].trim();
-                                            }
-                                            actionPart = actionPart.replace(/^(Suggestion\s*\d+:)\s*/i, '').trim();
+                                        {/* Action Header */}
+                                        <div className="flex items-center justify-between mt-12 mb-8 px-2">
+                                            <h3 className="text-2xl font-black text-white flex items-center gap-4">
+                                                <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 text-lg">
+                                                    {dispute.aiAnalysis.suggestions?.length || 0}
+                                                </span>
+                                                PROPOSED RESOLUTIONS
+                                            </h3>
+                                            <button
+                                                onClick={handleGenerateAnalysis}
+                                                className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-all flex items-center gap-2"
+                                            >
+                                                <Sparkles size={14} /> Regenerate
+                                            </button>
+                                        </div>
 
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    className={`relative group rounded-3xl transition-all duration-300 ${isResolved && !isThisTheResolution
-                                                        ? 'opacity-30 pointer-events-none grayscale'
-                                                        : ''} ${myVote === 'accept'
-                                                            ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500/50 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]'
-                                                            : myVote === 'reject'
-                                                                ? 'bg-red-950/30 border border-red-500/30 opacity-75'
-                                                                : 'bg-slate-800/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/20'
-                                                        }`}
-                                                >
-                                                    <div className="p-8">
-                                                        <div className="flex flex-col md:flex-row gap-8">
-                                                            {/* Number Column */}
-                                                            <div className="flex-shrink-0">
-                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black border-2 ${myVote === 'accept' ? 'bg-green-500 text-white border-green-400 shadow-lg shadow-green-500/40' :
-                                                                    'bg-slate-900 text-slate-500 border-slate-700'
-                                                                    }`}>
-                                                                    {index + 1}
+                                        {/* Suggestions Cards */}
+                                        <div className="space-y-6">
+                                            {dispute.aiAnalysis.suggestions?.map((suggestionText, index) => {
+                                                const suggestionVotes = dispute.aiAnalysis.votes?.[index] || {};
+                                                const myVote = suggestionVotes[currentUser.email];
+                                                const acceptedBy = Object.keys(suggestionVotes).filter(email => suggestionVotes[email] === 'accept');
+
+                                                // Check if THIS suggestion is fully resolved (consensus)
+                                                const participants = dispute.participants || [];
+                                                const isConsensus = participants.length > 0 && participants.every(p => suggestionVotes[p] === 'accept');
+
+                                                // Check if ANY suggestion is resolved
+                                                const resolutionText = dispute.resolution || (dispute.status === 'resolved' ? dispute.aiAnalysis.suggestions.find((_, i) => {
+                                                    const votes = dispute.aiAnalysis.votes?.[i] || {};
+                                                    return participants.length > 0 && participants.every(p => votes[p] === 'accept');
+                                                }) : null);
+
+                                                const isResolved = !!resolutionText;
+                                                const isThisTheResolution = isConsensus || (resolutionText === suggestionText);
+
+                                                let actionPart = suggestionText;
+                                                let reasonPart = null;
+                                                const reasonMatch = suggestionText.match(/(?:Reason|Reasoning|Rational):\s*(.*)/i);
+                                                if (reasonMatch) {
+                                                    actionPart = suggestionText.replace(reasonMatch[0], '').trim();
+                                                    reasonPart = reasonMatch[1].trim();
+                                                }
+                                                actionPart = actionPart.replace(/^(Suggestion\s*\d+:)\s*/i, '').trim();
+
+                                                return (
+                                                    <div
+                                                        key={index}
+                                                        className={`relative group rounded-3xl transition-all duration-300 ${isResolved && !isThisTheResolution
+                                                            ? 'opacity-30 pointer-events-none grayscale'
+                                                            : ''} ${myVote === 'accept'
+                                                                ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500/50 shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]'
+                                                                : myVote === 'reject'
+                                                                    ? 'bg-red-950/30 border border-red-500/30 opacity-75'
+                                                                    : 'bg-slate-800/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/20'
+                                                            }`}
+                                                    >
+                                                        <div className="p-8">
+                                                            <div className="flex flex-col md:flex-row gap-8">
+                                                                {/* Number Column */}
+                                                                <div className="flex-shrink-0">
+                                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black border-2 ${myVote === 'accept' ? 'bg-green-500 text-white border-green-400 shadow-lg shadow-green-500/40' :
+                                                                        'bg-slate-900 text-slate-500 border-slate-700'
+                                                                        }`}>
+                                                                        {index + 1}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
 
-                                                            {/* Content Column */}
-                                                            <div className="flex-1 space-y-6">
-                                                                <div>
-                                                                    <h5 className={`text-xl font-bold leading-relaxed mb-4 ${myVote === 'reject' ? 'text-gray-500 line-through decoration-red-500/50' : 'text-white'}`}>
-                                                                        {actionPart}
-                                                                    </h5>
-                                                                    {reasonPart && (
-                                                                        <div className="bg-black/30 rounded-xl p-4 border border-white/5">
-                                                                            <p className="text-sm text-gray-400 leading-relaxed font-medium">
-                                                                                <span className="text-blue-400 font-bold uppercase text-xs tracking-wider mr-2">Rationale:</span>
-                                                                                {reasonPart}
-                                                                            </p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                                {/* Action Bar */}
-                                                                <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/5">
-
-                                                                    {/* Status Badges */}
-                                                                    <div className="flex items-center gap-3">
-                                                                        {acceptedBy.length > 0 ? (
-                                                                            <div className="flex -space-x-3">
-                                                                                {acceptedBy.map((email, i) => (
-                                                                                    <div key={i} className="w-10 h-10 rounded-full bg-slate-900 border-2 border-green-500 flex items-center justify-center text-xs font-bold text-green-400 shadow-lg shadow-green-900/50" title={email}>
-                                                                                        {email.charAt(0).toUpperCase()}
-                                                                                    </div>
-                                                                                ))}
+                                                                {/* Content Column */}
+                                                                <div className="flex-1 space-y-6">
+                                                                    <div>
+                                                                        <h5 className={`text-xl font-bold leading-relaxed mb-4 ${myVote === 'reject' ? 'text-gray-500 line-through decoration-red-500/50' : 'text-white'}`}>
+                                                                            {actionPart}
+                                                                        </h5>
+                                                                        {reasonPart && (
+                                                                            <div className="bg-black/30 rounded-xl p-4 border border-white/5">
+                                                                                <p className="text-sm text-gray-400 leading-relaxed font-medium">
+                                                                                    <span className="text-blue-400 font-bold uppercase text-xs tracking-wider mr-2">Rationale:</span>
+                                                                                    {reasonPart}
+                                                                                </p>
                                                                             </div>
-                                                                        ) : (
-                                                                            <span className="text-xs font-bold text-slate-600 uppercase tracking-widest px-3 py-1 rounded-full border border-slate-800">
-                                                                                Awaiting Votes
-                                                                            </span>
-                                                                        )}
-                                                                        {isThisTheResolution && (
-                                                                            <span className="ml-2 px-3 py-1 rounded-full bg-green-500 text-black text-xs font-bold uppercase tracking-wider animate-pulse">
-                                                                                Resolution Reached
-                                                                            </span>
                                                                         )}
                                                                     </div>
 
-                                                                    {/* Buttons */}
-                                                                    <div className="flex items-center gap-4">
-                                                                        {!isResolved && (
-                                                                            <>
-                                                                                <button
-                                                                                    onClick={() => handleSuggestionVote(index, 'reject')}
-                                                                                    className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'reject'
-                                                                                        ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/40'
-                                                                                        : 'bg-transparent border-slate-700 text-slate-500 hover:border-red-500 hover:text-red-500 hover:bg-red-500/10'
-                                                                                        }`}
-                                                                                >
-                                                                                    <span className="flex items-center gap-2">
-                                                                                        <X size={16} strokeWidth={3} /> REJECT
-                                                                                    </span>
-                                                                                </button>
+                                                                    {/* Action Bar */}
+                                                                    <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/5">
 
-                                                                                <button
-                                                                                    onClick={() => handleSuggestionVote(index, 'accept')}
-                                                                                    className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'accept'
-                                                                                        ? 'bg-green-500 border-green-400 text-black shadow-[0_0_20px_rgba(34,197,94,0.6)] scale-105'
-                                                                                        : 'bg-transparent border-green-500/30 text-green-400 hover:bg-green-500 hover:border-green-400 hover:text-black hover:shadow-[0_0_20px_rgba(34,197,94,0.4)]'
-                                                                                        }`}
-                                                                                >
-                                                                                    <span className="flex items-center gap-2">
-                                                                                        <CheckCircle size={16} strokeWidth={3} />
-                                                                                        {myVote === 'accept' ? 'ACCEPTED' : 'ACCEPT'}
-                                                                                    </span>
-                                                                                </button>
-                                                                            </>
-                                                                        )}
+                                                                        {/* Status Badges */}
+                                                                        <div className="flex items-center gap-3">
+                                                                            {acceptedBy.length > 0 ? (
+                                                                                <div className="flex -space-x-3">
+                                                                                    {acceptedBy.map((email, i) => (
+                                                                                        <div key={i} className="w-10 h-10 rounded-full bg-slate-900 border-2 border-green-500 flex items-center justify-center text-xs font-bold text-green-400 shadow-lg shadow-green-900/50" title={email}>
+                                                                                            {email.charAt(0).toUpperCase()}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            ) : (
+                                                                                <span className="text-xs font-bold text-slate-600 uppercase tracking-widest px-3 py-1 rounded-full border border-slate-800">
+                                                                                    Awaiting Votes
+                                                                                </span>
+                                                                            )}
+                                                                            {isThisTheResolution && (
+                                                                                <span className="ml-2 px-3 py-1 rounded-full bg-green-500 text-black text-xs font-bold uppercase tracking-wider animate-pulse">
+                                                                                    Resolution Reached
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
 
-                                                                        {isResolved && isThisTheResolution && (
-                                                                            <div className="flex items-center gap-4">
-                                                                                <button disabled className="px-8 py-3 rounded-xl bg-green-600 text-white font-bold opacity-100 cursor-default">
-                                                                                    AGREEMENT FINALIZED
-                                                                                </button>
-                                                                            </div>
-                                                                        )}
+                                                                        {/* Buttons */}
+                                                                        <div className="flex items-center gap-4">
+                                                                            {!isResolved && (
+                                                                                <>
+                                                                                    <button
+                                                                                        onClick={() => handleSuggestionVote(index, 'reject')}
+                                                                                        className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'reject'
+                                                                                            ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/40'
+                                                                                            : 'bg-transparent border-slate-700 text-slate-500 hover:border-red-500 hover:text-red-500 hover:bg-red-500/10'
+                                                                                            }`}
+                                                                                    >
+                                                                                        <span className="flex items-center gap-2">
+                                                                                            <X size={16} strokeWidth={3} /> REJECT
+                                                                                        </span>
+                                                                                    </button>
+
+                                                                                    <button
+                                                                                        onClick={() => handleSuggestionVote(index, 'accept')}
+                                                                                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${myVote === 'accept'
+                                                                                            ? 'bg-green-500 border-green-400 text-black shadow-[0_0_20px_rgba(34,197,94,0.6)] scale-105'
+                                                                                            : 'bg-transparent border-green-500/30 text-green-400 hover:bg-green-500 hover:border-green-400 hover:text-black hover:shadow-[0_0_20px_rgba(34,197,94,0.4)]'
+                                                                                            }`}
+                                                                                    >
+                                                                                        <span className="flex items-center gap-2">
+                                                                                            <CheckCircle size={16} strokeWidth={3} />
+                                                                                            {myVote === 'accept' ? 'ACCEPTED' : 'ACCEPT'}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                </>
+                                                                            )}
+
+                                                                            {isResolved && isThisTheResolution && (
+                                                                                <div className="flex items-center gap-2 md:gap-4 mt-2 md:mt-0">
+                                                                                    <button disabled className="px-4 py-2 md:px-6 md:py-3 rounded-xl bg-green-600 text-white font-bold opacity-100 cursor-default shadow-lg shadow-green-900/40 text-[10px] md:text-xs">
+                                                                                        AGREEMENT FINALIZED
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => generateResolutionPDF(dispute, suggestionText)}
+                                                                                        className="px-4 py-2 md:px-6 md:py-3 rounded-xl bg-slate-800 border border-slate-600 text-white font-bold hover:bg-slate-700 hover:border-slate-500 transition-all flex items-center gap-2 shadow-lg text-[10px] md:text-xs"
+                                                                                        title="Download Agreement PDF"
+                                                                                    >
+                                                                                        <Download size={14} className="md:w-[18px] md:h-[18px]" />
+                                                                                        <span>PDF</span>
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 };
 

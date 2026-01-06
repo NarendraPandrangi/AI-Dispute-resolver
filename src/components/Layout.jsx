@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db } from '../services/firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { Scale, LogOut, LayoutDashboard, PlusCircle, User, Bell, FileText, ShieldAlert, Settings } from 'lucide-react';
 
 const Layout = () => {
     const { currentUser } = useAuth();
-    console.log("Layout: currentUser photoURL:", currentUser?.photoURL?.substring(0, 50) + "..."); // Debug log
-
     const location = useLocation();
     const navigate = useNavigate();
     const [unreadCount, setUnreadCount] = useState(0);
@@ -47,14 +45,14 @@ const Layout = () => {
             <Link
                 to={to}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-600/20'
+                    ? 'bg-violet-600/10 text-[var(--primary-light)] border border-violet-600/20 shadow-[0_0_15px_rgba(124,58,237,0.15)]'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }`}
             >
                 <div className="relative">
                     <Icon size={20} />
                     {badge > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[#0f172a] transform scale-90">
+                        <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[#0f0729] transform scale-90 box-content">
                             {badge > 9 ? '9+' : badge}
                         </span>
                     )}
@@ -65,15 +63,15 @@ const Layout = () => {
     };
 
     return (
-        <div className="min-h-screen flex text-gray-100">
-            {/* Sidebar */}
-            <aside className="w-64 border-r border-gray-800 bg-[#0f172a] hidden md:flex flex-col">
-                <div className="p-6 border-b border-gray-800">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="min-h-screen flex text-gray-100 font-sans">
+            {/* Sidebar with Glass effect */}
+            <aside className="w-64 border-r border-white/5 bg-[var(--bg-card)]/80 backdrop-blur-xl hidden md:flex flex-col relative z-20">
+                <div className="p-6 border-b border-white/5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-900/20">
                             <Scale size={20} className="text-white" />
                         </div>
-                        <span className="font-bold text-xl tracking-tight">FairResolve</span>
+                        <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-violet-200">FairResolve</span>
                     </div>
                 </div>
 
@@ -86,19 +84,19 @@ const Layout = () => {
                     <NavLink to="/profile" icon={Settings}>Settings</NavLink>
                 </nav>
 
-                <div className="p-4 border-t border-gray-800">
-                    <Link to="/profile" className="flex items-center gap-3 px-4 py-3 mb-2 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors cursor-pointer group">
+                <div className="p-4 border-t border-white/5">
+                    <Link to="/profile" className="flex items-center gap-3 px-4 py-3 mb-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group border border-transparent hover:border-white/5">
                         {currentUser?.photoURL ? (
                             <img
                                 key={currentUser.photoURL}
                                 src={currentUser.photoURL}
                                 alt="Avatar"
-                                style={{ width: '24px', height: '24px', minWidth: '24px' }}
-                                className="w-6 h-6 rounded-full border border-gray-600 object-cover"
+                                style={{ width: '32px', height: '32px', minWidth: '32px' }}
+                                className="w-8 h-8 rounded-full border border-gray-600 object-cover"
                             />
                         ) : (
-                            <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center border border-gray-600">
-                                <User size={14} className="text-gray-400 group-hover:text-white" />
+                            <div className="w-8 h-8 rounded-full bg-violet-900/30 flex items-center justify-center border border-violet-500/30">
+                                <User size={16} className="text-violet-300 group-hover:text-white" />
                             </div>
                         )}
                         <div className="flex-1 overflow-hidden">
@@ -121,8 +119,13 @@ const Layout = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto bg-[#0f172a] relative">
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900/0 to-slate-900/0" />
+            <main className="flex-1 overflow-auto relative">
+                {/* Dynamic Background */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-violet-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
+                    <div className="absolute bottom-[-20%] left-[-10%] w-[800px] h-[800px] bg-fuchsia-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
+                </div>
+
                 <div className="relative z-10 p-4 md:p-8 max-w-7xl mx-auto">
                     <Outlet />
                 </div>

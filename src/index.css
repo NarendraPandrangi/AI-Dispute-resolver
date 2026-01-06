@@ -5,29 +5,38 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
 
-  /* Modern Primary Blue/Indigo */
-  --primary-hue: 225;
-  --primary: hsl(var(--primary-hue), 85%, 55%);
-  --primary-dark: hsl(var(--primary-hue), 85%, 45%);
-  --primary-light: hsl(var(--primary-hue), 90%, 65%);
-  --primary-glow: hsla(var(--primary-hue), 85%, 55%, 0.5);
+  /* Midnight Aurora Theme */
+  --primary-hue: 260;
+  --primary: hsl(var(--primary-hue), 90%, 65%);
+  /* Electric Violet */
+  --primary-dark: hsl(var(--primary-hue), 90%, 50%);
+  --primary-light: hsl(var(--primary-hue), 100%, 75%);
+  --primary-glow: hsla(var(--primary-hue), 90%, 65%, 0.6);
 
-  --secondary-hue: 265;
-  --secondary: hsl(var(--secondary-hue), 80%, 60%);
+  --secondary-hue: 320;
+  /* Hot Pink/Magenta */
+  --secondary: hsl(var(--secondary-hue), 90%, 60%);
+  --secondary-glow: hsla(var(--secondary-hue), 90%, 60%, 0.5);
 
-  /* Deep High-Contrast Dark Mode */
-  --bg-dark: #020617;
-  /* Slate 950 */
-  --bg-card: #0f172a;
-  /* Slate 900 */
-  --bg-input: #1e293b;
-  /* Slate 800 */
-  --bg-hover: rgba(255, 255, 255, 0.08);
+  --accent-cyan: #06b6d4;
+  --accent-cyan-glow: rgba(6, 182, 212, 0.5);
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-danger: #ef4444;
+  /* Deep Space Backgrounds */
+  --bg-dark: #030014;
+  /* Deepest Indigo/Black */
+  --bg-card: #0f0729;
+  /* Deep Purple */
+  --bg-input: #1a103c;
+  /* Lighter Purple */
+  --bg-hover: rgba(255, 255, 255, 0.06);
+
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  /* Cool Gray */
+  --text-danger: #f43f5e;
+  /* Rose */
   --text-success: #10b981;
+  /* Emerald */
   --warning: #f59e0b;
 
   /* Layout Spacing */
@@ -39,16 +48,16 @@
   --space-8: 2rem;
   --space-12: 3rem;
   --sidebar-width: 17rem;
-  /* Slightly wider */
 
-  /* Enhanced Glassmorphism */
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  /* Premium Glassmorphism */
+  --glass-bg: rgba(15, 7, 41, 0.7);
+  --glass-border: rgba(139, 92, 246, 0.15);
+  /* Purple tint border */
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 
   --radius: 0.75rem;
-  /* More rounded */
-  --radius-lg: 1.25rem;
+  --radius-lg: 1.5rem;
+  /* Even more rounded for modern feel */
 }
 
 * {
@@ -60,10 +69,11 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-dark);
-  background-image: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.08) 0px, transparent 50%);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
   background-attachment: fixed;
-  /* Subtle texture everywhere */
   color: var(--text-main);
   line-height: 1.6;
   min-height: 100vh;
@@ -451,29 +461,29 @@ textarea {
   padding: 0 1rem;
 }
 
+/* Component Updates */
+
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  /* Inner light ring */
+  box-shadow: var(--glass-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-lg);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.4);
 }
-
-/* Component Updates */
 
 /* Fix button visibility and sizing */
 .btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.75rem;
   border-radius: var(--radius);
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -481,9 +491,7 @@ textarea {
   cursor: pointer;
   border: none;
   min-width: 100px;
-  /* Ensure buttons have a reasonable minimum width */
   white-space: nowrap;
-  /* Prevent button text from wrapping awkwardly */
 }
 
 .btn-primary {
@@ -492,48 +500,71 @@ textarea {
   box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   font-weight: 600;
   letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.btn-primary span,
+.btn-primary svg {
+  position: relative;
+  z-index: 2;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px var(--primary-glow), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
-  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  box-shadow: 0 15px 30px -5px var(--primary-glow), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  /* Slight background to make it visible */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  /* Stronger border */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-main);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
 }
 
 .btn-ai-gen {
-  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+  /* Purple to Pink */
   color: white;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
   border: none;
   font-size: 0.875rem;
   padding: 0.5rem 1.5rem;
-  /* Smaller padding */
 }
 
 .btn-ai-gen:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
+  background: linear-gradient(135deg, #6d28d9 0%, #be185d 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 8px 25px rgba(219, 39, 119, 0.4);
 }
 
 .input-field {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1.25rem;
   background: var(--bg-input);
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
   color: var(--text-main);
   transition: all 0.2s;
@@ -542,7 +573,8 @@ textarea {
 .input-field:focus {
   border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  background: rgba(26, 16, 60, 0.8);
 }
 
 /* Improve container responsiveness */
@@ -560,28 +592,28 @@ svg {
 
 /* Ensure headings scale better */
 .heading-xl {
-  font-size: 2.5rem;
-  /* Slightly smaller base */
+  font-size: 3rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(to right, #fff, #94a3b8);
+  background: linear-gradient(to right, #fff 20%, #c4b5fd 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
+  text-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
 }
 
 @media (min-width: 768px) {
   .heading-xl {
-    font-size: 3.5rem;
+    font-size: 4rem;
   }
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #60a5fa 0%, #c084fc 50%, #f472b6 100%);
+  background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #22d3ee 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: gradient-flow 5s ease infinite;
+  animation: gradient-flow 4s ease infinite;
 }
 
 @keyframes gradient-flow {
