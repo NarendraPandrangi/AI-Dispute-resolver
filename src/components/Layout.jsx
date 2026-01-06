@@ -21,7 +21,7 @@ const NavLink = ({ to, icon: Icon, children, badge, location }) => {
             <div className="relative">
                 <Icon size={20} />
                 {badge > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-[var(--bg-card)] font-semibold">
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[11px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-[var(--bg-card)] font-bold shadow-lg">
                         {badge > 9 ? '9+' : badge}
                     </span>
                 )}

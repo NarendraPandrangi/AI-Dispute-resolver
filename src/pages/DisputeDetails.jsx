@@ -187,20 +187,20 @@ const DisputeDetails = () => {
                     </h2>
                 </div>
 
-                <div className="flex items-center gap-2 rounded-xl overflow-hidden border border-gray-700">
+                <div className="inline-flex items-center gap-0 rounded-lg overflow-hidden border border-gray-700 bg-gray-800/50 p-1">
                     <button
                         onClick={() => setActiveTab('discussion')}
-                        className={`flex-1 px-6 py-3 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === 'discussion' ? 'bg-blue-600 text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:text-white hover:bg-white/5'}`}
+                        className={`px-5 py-2.5 text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 rounded-md ${activeTab === 'discussion' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-gray-700/50'}`}
                     >
-                        <MessageSquare size={18} />
+                        <MessageSquare size={16} />
                         Discussion
                     </button>
                     <button
                         onClick={() => setActiveTab('resolution')}
-                        className={`flex-1 px-6 py-3 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === 'resolution' ? 'bg-emerald-600 text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:text-white hover:bg-white/5'}`}
+                        className={`px-5 py-2.5 text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 rounded-md ${activeTab === 'resolution' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-gray-700/50'}`}
                     >
-                        <Sparkles size={18} />
-                        Resolution Center
+                        <Sparkles size={16} />
+                        AI Resolution
                     </button>
                 </div>
             </div>
